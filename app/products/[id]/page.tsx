@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { getProduct } from "@/app/api/products";
 
+import { EditProductForm } from "@/components/products/EditProductForm";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -16,10 +17,12 @@ interface ProductDetailsPageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function ProductDetailsPage({
   params,
+  searchParams,
 }: ProductDetailsPageProps) {
   const { id } = await params;
   const productId = Number(id);
@@ -27,6 +30,23 @@ export default async function ProductDetailsPage({
   if (Number.isNaN(productId)) {
     notFound();
   }
+
+  // Carry the user's list state (search/filters/sort/page) into the back link
+  // so returning to the list restores exactly what they were looking at.
+  const { search, category, sort, page, ...rest } = await searchParams;
+  const listParams = new URLSearchParams();
+  if (typeof search === "string" && search) listParams.set("search", search);
+  if (typeof category === "string" && category && category !== "all")
+    listParams.set("category", category);
+  if (typeof sort === "string" && sort && sort !== "default")
+    listParams.set("sort", sort);
+  if (typeof page === "string" && page && page !== "1")
+    listParams.set("page", page);
+  for (const [key, value] of Object.entries(rest)) {
+    if (typeof value === "string" && value) listParams.set(key, value);
+  }
+  const queryString = listParams.toString();
+  const backHref = `/products${queryString ? `?${queryString}` : ""}`;
 
   let product;
 
@@ -39,7 +59,7 @@ export default async function ProductDetailsPage({
   return (
     <main className="container mx-auto px-4 py-8">
       <Link
-        href="/products"
+        href={backHref}
         className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-sm transition-colors hover:bg-muted hover:text-foreground"
       >
         ← Back to products
@@ -116,6 +136,8 @@ export default async function ProductDetailsPage({
               </div>
             </CardContent>
           </Card>
+
+          <EditProductForm product={product} />
         </div>
       </div>
     </main>
