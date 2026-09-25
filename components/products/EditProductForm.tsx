@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { updateProduct } from "@/app/api/products";
 
 interface EditProductFormProps {
@@ -25,10 +26,6 @@ export function EditProductForm({
   const [price, setPrice] = useState(String(product.price));
   const [stock, setStock] = useState(String(product.stock));
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(
-    null,
-  );
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -36,8 +33,6 @@ export function EditProductForm({
     event.preventDefault();
 
     setIsSaving(true);
-    setMessage(null);
-    setError(null);
 
     try {
       const updatedProduct = await updateProduct(
@@ -48,10 +43,16 @@ export function EditProductForm({
         },
       );
 
-      setMessage("Product updated successfully.");
+      toast.success(
+        "Product updated",
+        `Changes to "${updatedProduct.title}" were saved successfully.`,
+      );
       onUpdated?.(updatedProduct);
     } catch {
-      setError("Failed to update product. Please try again.");
+      toast.error(
+        "Update failed",
+        "Something went wrong while saving. Please try again.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -107,18 +108,6 @@ export function EditProductForm({
           <Button type="submit" disabled={isSaving}>
             {isSaving ? "Saving..." : "Save changes"}
           </Button>
-
-          {message && (
-            <p className="text-sm text-green-600">
-              {message}
-            </p>
-          )}
-
-          {error && (
-            <p className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
         </form>
       </CardContent>
     </Card>
