@@ -56,7 +56,8 @@ export async function getProductCategories(): Promise<string[]> {
     throw new Error("Failed to fetch product categories");
   }
 
-  return response.json();
+  const data = await response.json();
+  return data.map((item: { slug: string }) => item.slug);
 }
 
 export async function updateProduct(
