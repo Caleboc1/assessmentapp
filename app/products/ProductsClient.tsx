@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { getProductCategories, getProducts } from "@/app/api/products";
-import type { Product } from "@/types";
+import type { Product, SortField, SortOrder } from "@/types";
 
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProductFilters } from "@/components/products/ProductFilters";
@@ -15,6 +15,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const PRODUCTS_PER_PAGE = 12;
+
+/** Maps a UI sort option to the API's sortBy/order parameters. */
+function parseSort(
+  sort: string,
+): { sortBy?: SortField; order?: SortOrder } {
+  switch (sort) {
+    case "title-asc":
+      return { sortBy: "title", order: "asc" };
+    case "price-asc":
+      return { sortBy: "price", order: "asc" };
+    case "price-desc":
+      return { sortBy: "price", order: "desc" };
+    case "rating-desc":
+      return { sortBy: "rating", order: "desc" };
+    default:
+      return {};
+  }
+}
 
 export default function ProductsClient() {
   const router = useRouter();
@@ -62,6 +80,7 @@ export default function ProductsClient() {
             skip,
             search: debouncedSearch,
             category: category === "all" ? undefined : category,
+            ...parseSort(sort),
           }),
           getProductCategories(),
         ]);
@@ -80,23 +99,7 @@ export default function ProductsClient() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedSearch, category, page]);
-
-  const sortedProducts = useMemo(() => {
-    const items = [...products];
-    switch (sort) {
-      case "title-asc":
-        return items.sort((a, b) => a.title.localeCompare(b.title));
-      case "price-asc":
-        return items.sort((a, b) => a.price - b.price);
-      case "price-desc":
-        return items.sort((a, b) => b.price - a.price);
-      case "rating-desc":
-        return items.sort((a, b) => b.rating - a.rating);
-      default:
-        return items;
-    }
-  }, [products, sort]);
+  }, [debouncedSearch, category, sort, page]);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -152,7 +155,7 @@ export default function ProductsClient() {
 
         {!isLoading && !error && (
           <>
-            <ProductList products={sortedProducts} />
+            <ProductList products={products} />
             <ProductPagination
               page={page}
               total={total}

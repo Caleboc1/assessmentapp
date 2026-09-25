@@ -1,6 +1,8 @@
 import type {
   Product,
   ProductsResponse,
+  SortField,
+  SortOrder,
   UpdateProductPayload,
 } from "@/types";
 
@@ -11,6 +13,8 @@ interface GetProductsParams {
   skip?: number;
   search?: string;
   category?: string;
+  sortBy?: SortField;
+  order?: SortOrder;
 }
 
 export async function getProducts({
@@ -18,17 +22,27 @@ export async function getProducts({
   skip = 0,
   search,
   category,
+  sortBy,
+  order,
 }: GetProductsParams = {}): Promise<ProductsResponse> {
+  const queryParams = new URLSearchParams({
+    limit: String(limit),
+    skip: String(skip),
+  });
+
+  if (sortBy) queryParams.set("sortBy", sortBy);
+  if (order) queryParams.set("order", order);
+
   let endpoint = `${API_BASE_URL}/products`;
 
   if (search) {
-    endpoint = `${API_BASE_URL}/products/search?q=${encodeURIComponent(search)}`;
+    endpoint = `${API_BASE_URL}/products/search`;
+    queryParams.set("q", search);
   } else if (category) {
     endpoint = `${API_BASE_URL}/products/category/${encodeURIComponent(category)}`;
   }
 
-  const separator = endpoint.includes("?") ? "&" : "?";
-  const url = `${endpoint}${separator}limit=${limit}&skip=${skip}`;
+  const url = `${endpoint}?${queryParams.toString()}`;
 
   const response = await fetch(url);
 
