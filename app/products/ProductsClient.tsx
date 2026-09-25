@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { getProductCategories, getProducts } from "@/api/products";
+import { getProductCategories, getProducts } from "@/app/api/products";
 import type { Product } from "@/types";
 
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";

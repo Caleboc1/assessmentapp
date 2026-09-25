@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { updateProduct } from "@/api/products";
+import { updateProduct } from "@/app/api/products";
 
 interface EditProductFormProps {
   product: Product;

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getProduct } from "@/api/products";
+import { getProduct } from "@/app/api/products";
 
 import { Badge } from "@/components/ui/badge";
 import {
